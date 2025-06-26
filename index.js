@@ -16,7 +16,7 @@ let datosActuales = {};
 async function obtenerDatos() {
     try {
         for (const ticker of SYMBOLS) {
-            const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/5/2023-06-01/2025-06-26?adjusted=true&sort=desc&limit=5&apiKey=${POLYGON_API_KEY}`;
+            const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/2023-06-01/2025-06-26?adjusted=true&sort=desc&limit=5&apiKey=${POLYGON_API_KEY}`;
             const response = await axios.get(url);
             const historial = response.data.results || [];
 
