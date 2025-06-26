@@ -4,7 +4,7 @@ const app = express();
 
 const URL_RENDER = 'https://jarvis-libre.onrender.com/reporte-mercado';
 const INTERVALO_MS = 60 * 1000; // Cada minuto
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 let datosActuales = {}; // Aquí se guardan los datos para el endpoint público
 
