@@ -6,20 +6,17 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 10000;
 const POLYGON_API_KEY = process.env.POLYGON_API_KEY;
-const INTERVALO_MS = 60 * 1000; // Cada minuto
 
-let datosActuales = {};
+app.get('/reporte-mercado/:ticker', async (req, res) => {
+    const ticker = req.params.ticker.toUpperCase();
 
-// Función para obtener históricos y calcular indicadores
-async function obtenerDatos(ticker) {
     try {
         const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/5/2023-06-01/2025-06-26?adjusted=true&sort=desc&limit=5&apiKey=${POLYGON_API_KEY}`;
         const response = await axios.get(url);
         const historial = response.data.results || [];
 
         if (historial.length < 5) {
-            console.warn(`⚠️ No hay suficientes datos para ${ticker}`);
-            return null;
+            return res.status(400).json({ error: "No se pudieron obtener suficientes datos." });
         }
 
         const cierres = historial.map(d => d.c).reverse();
@@ -36,7 +33,8 @@ async function obtenerDatos(ticker) {
             SimpleMASignal: false
         }).slice(-1)[0];
 
-        return {
+        res.json({
+            ticker,
             precioActual: cierres.at(-1),
             rsi: rsi?.toFixed(2),
             ema: ema?.toFixed(2),
@@ -45,26 +43,13 @@ async function obtenerDatos(ticker) {
             signal: macd ? macd.signal.toFixed(2) : "N/A",
             histogram: macd ? macd.histogram.toFixed(2) : "N/A",
             historico: cierres
-        };
+        });
     } catch (error) {
         console.error(`❌ Error al obtener datos de ${ticker}:`, error.message);
-        return null;
+        res.status(404).json({ error: "No se pudieron obtener datos o el símbolo es inválido." });
     }
-}
-
-// Endpoint público dinámico
-app.get('/reporte-mercado/:ticker', async (req, res) => {
-    const ticker = req.params.ticker.toUpperCase();
-    const datos = await obtenerDatos(ticker);
-
-    if (!datos) {
-        return res.status(400).json({ error: "No se pudieron obtener datos o el símbolo es inválido." });
-    }
-
-    res.json(datos);
 });
 
-// Inicializa servicio
 app.listen(PORT, () => {
     console.log(`🚀 Puente operativo en puerto ${PORT} con consultas dinámicas habilitadas`);
 });
