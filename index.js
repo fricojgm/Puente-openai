@@ -4,9 +4,9 @@ const technicalIndicators = require('technicalindicators');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 const POLYGON_API_KEY = process.env.POLYGON_API_KEY;
-const INTERVALO_MS = 60 * 1000; // cada minuto
+const INTERVALO_MS = 60 * 1000; // Cada minuto
 
 let datosActuales = {};
 
@@ -52,18 +52,19 @@ async function obtenerDatos(ticker) {
     }
 }
 
-// Endpoint abierto para cualquier ticker
+// Endpoint público dinámico
 app.get('/reporte-mercado/:ticker', async (req, res) => {
     const ticker = req.params.ticker.toUpperCase();
     const datos = await obtenerDatos(ticker);
 
-    if (datos) {
-        res.json(datos);
-    } else {
-        res.status(404).json({ error: "No se pudieron obtener datos o el símbolo es inválido." });
+    if (!datos) {
+        return res.status(400).json({ error: "No se pudieron obtener datos o el símbolo es inválido." });
     }
+
+    res.json(datos);
 });
 
+// Inicializa servicio
 app.listen(PORT, () => {
-    console.log(`🚀 Puente operativo en puerto ${PORT} con soporte abierto de tickers`);
+    console.log(`🚀 Puente operativo en puerto ${PORT} con consultas dinámicas habilitadas`);
 });
